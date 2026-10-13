@@ -3,7 +3,8 @@ import Lean.Util.CollectAxioms
 
 /-
   Only this trusted module may inspect the environment or emit the acceptance
-  marker. Candidate text is restricted to expression holes by the Python gate.
+  marker. Candidate text is transported as data and parsed as complete terms
+  by #checked_candidate, never interpolated into command source.
   The allowed axioms are Lean's usual logical foundations, never sorryAx or
   compiler-trust axioms. This module itself is part of the trusted code base.
 -/
@@ -11,6 +12,26 @@ import Lean.Util.CollectAxioms
 open Lean Elab Command Meta
 
 namespace Trusted
+
+private def parseCandidateTerm (label source : String) : CommandElabM (TSyntax `term) := do
+  -- runParserCategory rejects parser errors and any unconsumed input. This
+  -- runs in the verifier process, with only the trusted imported grammar.
+  match Parser.runParserCategory (← getEnv) `term source s!"<candidate {label}>" with
+  | .ok stx => return ⟨stx⟩
+  | .error diagnostic =>
+      throwError "Trusted candidate boundary: {label} must be exactly one Lean term\n{diagnostic}"
+
+elab "#checked_candidate " binders:bracketedBinder* " : " resultType:term " := "
+    implementation:str proof:str : command => do
+  -- Parse BOTH bodies before elaborating either one. Syntax splicing preserves
+  -- the term/command boundary independently of indentation or keyword lists.
+  let implementationTerm ← parseCandidateTerm "implementation" implementation.getString
+  let proofTerm ← parseCandidateTerm "proof" proof.getString
+  let candidateName := mkIdent `candidate
+  let proofName := mkIdent `candidate_correct
+  let specName := mkIdent `Spec
+  elabCommand (← `(command| def $candidateName $binders:bracketedBinder* : $resultType := $implementationTerm))
+  elabCommand (← `(command| theorem $proofName : $specName $candidateName := $proofTerm))
 
 private def allowedAxiom (name : Name) : Bool :=
   name == ``propext || name == ``Classical.choice || name == ``Quot.sound

@@ -6,12 +6,28 @@ Task hashes in traces identify the exact supplied contract. A task author can
 make a vacuous or incorrect specification; kernel acceptance cannot correct
 that design error.
 
-Candidates contain implementation and proof expressions. The assembler owns
-the surrounding declarations and final assertion of `Spec candidate`.
-Candidates cannot supply imports, theorem statements, or new top-level helper
-declarations. Local recursion and local invariant proofs remain available.
-Policy checks reject forbidden terms, commands, custom elaboration, strings
-and quoted identifiers where necessary to keep this restricted format small.
+Candidates contain implementation and proof expressions. Python first applies
+the conservative lexical policy, then encodes each body as an escaped Lean
+string literal in a fixed `#checked_candidate` command. Candidate text is never
+pasted into the surrounding command source. Quotes, backslashes, newlines, and
+control characters in comments remain data during this transport.
+
+Inside the verifier process, the trusted command uses Lean's term parser on
+each decoded body. The parser requires exactly one complete term and rejects
+errors or trailing input. Both bodies must parse before either is elaborated.
+The command then splices the parsed term syntax into controller-owned
+`def candidate <signature> := <implementation>` and
+`theorem candidate_correct : Spec candidate := <proof>` declarations. A term
+cannot close a source wrapper and become an extra top-level command. The fixed
+specification, signature, names, imports, and final assertion of
+`Spec candidate` remain trusted. Local recursion and proof-local invariants
+remain available.
+
+This structural boundary does not rely on enumerating every Lean command
+keyword. Lexical checks still restrict forbidden terms, metaprogramming,
+strings, and quoted identifiers in candidate code. Parsing a single term does
+not by itself establish proof correctness or the safety of every tactic;
+the dependency audit and isolated execution remain necessary.
 
 The trusted Lean audit recursively inspects constants used by both the
 implementation and proof, rejects unsafe definitions and axioms outside the
@@ -43,7 +59,28 @@ proof export and comparison against a separate trusted challenge with
 `comparator` and an external kernel. A second elaboration with the same
 compiler is a consistency check, not an independent proof-checker implementation.
 
-Each failed Lean invocation is counted. Policy failures use no Lean check.
-A successful candidate uses two checks. Model/API failures, missing compilers,
+Each failed Lean invocation is counted. Python lexical-policy failures use no
+Lean check; a term-boundary rejection inside Lean uses one and is reported as
+`policy_rejected`, allowing repair within the remaining budget. A successful
+candidate uses two checks. Model/API failures, missing compilers,
 and inaccessible Docker images are infrastructure errors, not evidence that
 the mathematical contract is unprovable.
+
+The CI Docker job runs reviewed term-boundary fixtures from
+`tests/test_candidate_boundary.py`. They cover declaration insertion and
+trailing input in both bodies, parsing both bodies before elaboration, literal
+transport, local recursion/invariants, and a rejection followed by successful
+repair. To repeat them after changing the trusted module:
+
+```bash
+bash scripts/build-verifier.sh
+RUN_LEAN_INTEGRATION=1 LEAN_TEST_BACKEND=docker \
+  python3 -m unittest discover -s tests -p test_candidate_boundary.py -v
+python3 -m agent check-fixtures
+python3 -m agent demo
+```
+
+Rebuild the image whenever `lean/Trusted/Audit.lean` changes: its compiled module
+is baked into the image. A stale image does not contain the updated trusted
+command. For these reviewed fixtures on the pinned local compiler, select
+`LEAN_TEST_BACKEND=local` and set `LEAN_BINARY=/path/to/lean` instead.

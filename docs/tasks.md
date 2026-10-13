@@ -25,11 +25,14 @@ fixture containing the same `implementation` and `proof` fields the model must
 produce. Model prompts receive the task contract and do not load reference files.
 
 The verifier renders `import Std`, a `Generated` namespace, the trusted
-specification, `def candidate <signature> := <implementation>`, and
-`theorem candidate_correct : Spec candidate := <proof>`. Both output fields are
-terms; global helper declarations are outside the interface. Local recursive
-functions and proof-local `have` statements provide the needed helpers. Lean may
-give a local recursive worker an internal name such as `candidate.go`; proofs can
+specification, and a fixed `#checked_candidate` command with the trusted
+signature and two escaped body strings. The trusted command parses both bodies
+as complete terms before constructing `def candidate <signature> :=
+<implementation>` and `theorem candidate_correct : Spec candidate := <proof>`
+as syntax trees. Global helper declarations are outside the interface. Local
+recursive functions and proof-local `have` statements provide the needed
+helpers. Lean may give a local recursive worker an internal name such as
+`candidate.go`; proofs can
 refer to that generated name.
 
 Library restrictions apply to the implementation, not the trusted specification

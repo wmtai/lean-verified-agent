@@ -88,6 +88,11 @@ imports, specification, and acceptance commands. The model can introduce local
 helpers with `let rec` and `have`; global helper declarations are intentionally
 outside this first version's candidate format.
 
+The verifier transports both bodies as escaped data to a trusted Lean command.
+It parses each as exactly one term before constructing the declarations, so
+candidate text cannot introduce extra top-level commands. This parsing runs
+inside the same isolated verifier as the proof check and dependency audit.
+
 ## Strategies and experiments
 
 | Strategy | Behavior |

@@ -1,8 +1,9 @@
 """A conservative boundary around the two untrusted Lean expression holes.
 
-This lexical gate is defense in depth, not a sandbox or a Lean parser. Lean's
-kernel and the trusted dependency audit establish the mathematical contract;
-the Docker runner limits the effects of elaboration. Task text is trusted.
+The lexical gate is defense in depth. Candidate bodies are transported as
+escaped strings; the trusted Lean command parses them as complete terms before
+building declaration syntax. The kernel and dependency audit establish the
+mathematical contract; Docker isolates parsing and elaboration. Tasks are trusted.
 """
 
 from __future__ import annotations
@@ -116,12 +117,26 @@ def validate_candidate(task: Task, candidate: Candidate) -> None:
                     raise PolicyViolation(f"Task forbids implementation identifier: {forbidden}")
 
 
-def _indent_expression(source: str) -> str:
-    return "\n".join("  " + line for line in source.strip().splitlines())
+def _lean_string(source: str) -> str:
+    """Encode data as one Lean string literal, without exposing command syntax.
+
+    Lean supports four-digit Unicode escapes, but not JSON's \\b/\\f escapes.
+    Encode character by character so literal backslashes cannot be re-escaped.
+    """
+    escapes = {"\\": "\\\\", '"': '\\"', "\n": "\\n", "\r": "\\r", "\t": "\\t"}
+    encoded = []
+    for character in source:
+        if character in escapes:
+            encoded.append(escapes[character])
+        elif ord(character) < 32 or ord(character) == 127:
+            encoded.append(f"\\u{ord(character):04x}")
+        else:
+            encoded.append(character)
+    return '"' + "".join(encoded) + '"'
 
 
 def render_candidate(task: Task, candidate: Candidate, acceptance_token: str) -> str:
-    """Build the entire file from the immutable task and two bounded holes."""
+    """Build fixed commands; untrusted bodies appear only as escaped data."""
     validate_candidate(task, candidate)
     if not re.fullmatch(r"[a-f0-9]{32}", acceptance_token):
         raise ValueError("Acceptance token must be a fresh UUID hex string")
@@ -130,10 +145,9 @@ def render_candidate(task: Task, candidate: Candidate, acceptance_token: str) ->
         "set_option maxHeartbeats 400000\n"
         "namespace Generated\n\n"
         + task.specification.strip() + "\n\n"
-        + f"def candidate {task.signature.strip()} := (\n"
-        + _indent_expression(candidate.implementation) + "\n)\n\n"
-        + "theorem candidate_correct : Spec candidate := (\n"
-        + _indent_expression(candidate.proof) + "\n)\n\n"
+        + f"#checked_candidate {task.signature.strip()} := "
+        + _lean_string(candidate.implementation.strip()) + " "
+        + _lean_string(candidate.proof.strip()) + "\n\n"
         + "example : Spec candidate := candidate_correct\n\n"
         + "end Generated\n\n"
         + f'#audit_candidate "{acceptance_token}"\n'

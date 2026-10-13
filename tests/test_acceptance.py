@@ -2,7 +2,7 @@ from pathlib import Path
 import unittest
 
 from agent.schema import Candidate, Task
-from verifier.acceptance import PolicyViolation, render_candidate, validate_candidate
+from verifier.acceptance import PolicyViolation, _lean_string, render_candidate, validate_candidate
 
 
 def example_task() -> Task:
@@ -49,10 +49,26 @@ class AcceptancePolicyTests(unittest.TestCase):
         task = example_task()
         source = render_candidate(task, Candidate("if a ≤ b then b else a", "by omega"), "a" * 32)
         self.assertIn(task.specification, source)
-        self.assertIn(f"def candidate {task.signature} := (", source)
-        self.assertIn("theorem candidate_correct : Spec candidate", source)
+        self.assertIn(f"#checked_candidate {task.signature} := ", source)
+        self.assertIn(_lean_string("if a ≤ b then b else a"), source)
+        self.assertIn(_lean_string("by omega"), source)
         self.assertIn("example : Spec candidate := candidate_correct", source)
         self.assertTrue(source.endswith('#audit_candidate "' + "a" * 32 + '"\n'))
+
+    def test_literal_transport_does_not_expose_candidate_commands(self):
+        # Quotes and backslashes inside comments are allowed by the lexical
+        # policy, but must remain data in the outer command parser.
+        candidate = Candidate('a /- " \\ \n)\nsimproc -/', "by rfl -- trailing comment")
+        source = render_candidate(example_task(), candidate, "a" * 32)
+        command = next(line for line in source.splitlines() if line.startswith("#checked_candidate"))
+        self.assertIn('\\"', command)
+        self.assertIn('\\\\', command)
+        self.assertIn('\\nsimproc', command)
+        self.assertNotIn("\nsimproc", source)
+
+    def test_lean_string_escapes_controls_without_changing_literal_backslashes(self):
+        self.assertEqual(_lean_string("\b\f\x00\x7f"), '"\\u0008\\u000c\\u0000\\u007f"')
+        self.assertEqual(_lean_string(r"\b\u0000"), '"\\\\b\\\\u0000"')
 
     def test_empty_oversized_or_untrusted_marker_rejected(self):
         for candidate in (Candidate("", "by rfl"), Candidate("a", " " * 40000), Candidate("x" * 32769, "by rfl")):

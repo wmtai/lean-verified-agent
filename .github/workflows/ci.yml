@@ -23,5 +23,10 @@ jobs:
         with:
           python-version: '3.11'
       - run: bash scripts/build-verifier.sh
+      - name: Check candidate term boundaries with real Lean in Docker
+        run: python -m unittest discover -s tests -p test_candidate_boundary.py -v
+        env:
+          RUN_LEAN_INTEGRATION: '1'
+          LEAN_TEST_BACKEND: docker
       - run: python -m agent check-fixtures
       - run: python -m agent demo

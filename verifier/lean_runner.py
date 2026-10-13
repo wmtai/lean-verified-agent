@@ -185,6 +185,8 @@ class LeanRunner:
         # Docker reserves these exit codes for setup/launch failures.
         if backend == "docker" and LeanRunner._docker_launch_failed(result):
             return "infrastructure_error"
+        if "Trusted candidate boundary:" in result.output:
+            return "policy_rejected"
         if "unsolved goals" in result.output:
             return "unsolved_goals"
         if "type mismatch" in result.output or "application type mismatch" in result.output:
