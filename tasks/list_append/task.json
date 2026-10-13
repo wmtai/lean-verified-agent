@@ -1,0 +1,20 @@
+{
+  "id": "list_append",
+  "title": "Structural list append",
+  "category": "lists",
+  "split": "dev",
+  "specification": "def Spec (f : List Nat → List Nat → List Nat) : Prop :=\n  ∀ xs ys, f xs ys = xs ++ ys",
+  "signature": "(xs ys : List Nat) : List Nat",
+  "constraints": [
+    "Use only the supplied Std import.",
+    "Return an expression body and a proof term; do not add global declarations.",
+    "Use a local structurally recursive function.",
+    "Do not use library append or the ++ notation in the implementation."
+  ],
+  "forbidden_identifiers": [
+    "List.append",
+    "HAppend.hAppend",
+    "append",
+    "hAppend"
+  ]
+}

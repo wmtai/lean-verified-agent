@@ -1,0 +1,19 @@
+{
+  "id": "list_reverse",
+  "title": "Structural list reversal",
+  "category": "lists",
+  "split": "dev",
+  "specification": "def Spec (f : List Nat → List Nat) : Prop :=\n  ∀ xs, f xs = xs.reverse",
+  "signature": "(xs : List Nat) : List Nat",
+  "constraints": [
+    "Use only the supplied Std import.",
+    "Return an expression body and a proof term; do not add global declarations.",
+    "Use structural recursion; appending a singleton is allowed."
+  ],
+  "forbidden_identifiers": [
+    "List.reverse",
+    "List.reverseAux",
+    "reverse",
+    "reverseAux"
+  ]
+}

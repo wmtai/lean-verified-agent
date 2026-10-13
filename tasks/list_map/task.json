@@ -1,0 +1,17 @@
+{
+  "id": "list_map",
+  "title": "Map a supplied function structurally",
+  "category": "lists",
+  "split": "dev",
+  "specification": "def Spec (f : (Nat → Nat) → List Nat → List Nat) : Prop :=\n  ∀ g xs, f g xs = xs.map g",
+  "signature": "(g : Nat → Nat) (xs : List Nat) : List Nat",
+  "constraints": [
+    "Use only the supplied Std import.",
+    "Return an expression body and a proof term; do not add global declarations.",
+    "Use a local structurally recursive function."
+  ],
+  "forbidden_identifiers": [
+    "List.map",
+    "map"
+  ]
+}

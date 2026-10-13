@@ -1,0 +1,13 @@
+{
+  "id": "checked_subtraction",
+  "title": "Checked subtraction",
+  "category": "arithmetic",
+  "split": "dev",
+  "specification": "def Spec (f : Nat → Nat → Option Nat) : Prop :=\n  (∀ a b, b ≤ a → f a b = some (a - b)) ∧\n  (∀ a b, a < b → f a b = none)",
+  "signature": "(a b : Nat) : Option Nat",
+  "constraints": [
+    "Use only the supplied Std import.",
+    "Return an expression body and a proof term; do not add global declarations."
+  ],
+  "forbidden_identifiers": []
+}

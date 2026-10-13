@@ -1,0 +1,6 @@
+name = "LeanVerifiedAgent"
+version = "0.1.0"
+defaultTargets = ["Trusted"]
+
+[[lean_lib]]
+name = "Trusted"

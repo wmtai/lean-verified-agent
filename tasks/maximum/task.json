@@ -1,0 +1,17 @@
+{
+  "id": "maximum",
+  "title": "Maximum with an output witness",
+  "category": "arithmetic",
+  "split": "dev",
+  "specification": "def Spec (f : Nat → Nat → Nat) : Prop :=\n  ∀ a b, a ≤ f a b ∧ b ≤ f a b ∧ (f a b = a ∨ f a b = b)",
+  "signature": "(a b : Nat) : Nat",
+  "constraints": [
+    "Use only the supplied Std import.",
+    "Return an expression body and a proof term; do not add global declarations.",
+    "Implement the comparison and branch directly."
+  ],
+  "forbidden_identifiers": [
+    "Nat.max",
+    "max"
+  ]
+}

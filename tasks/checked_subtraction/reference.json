@@ -1,0 +1,4 @@
+{
+  "implementation": "if b ≤ a then some (a - b) else none",
+  "proof": "by\n  unfold Spec\n  constructor\n  · intro a b h\n    simp [candidate, h]\n  · intro a b h\n    have hnot : ¬ b ≤ a := by omega\n    simp [candidate, hnot]"
+}

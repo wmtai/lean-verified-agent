@@ -1,0 +1,19 @@
+{
+  "id": "clamp",
+  "title": "Clamp a natural number to an interval",
+  "category": "arithmetic",
+  "split": "dev",
+  "specification": "def Spec (f : Nat → Nat → Nat → Nat) : Prop :=\n  ∀ lo hi x, lo ≤ hi →\n    lo ≤ f lo hi x ∧ f lo hi x ≤ hi ∧\n    (lo ≤ x → x ≤ hi → f lo hi x = x) ∧\n    (x < lo → f lo hi x = lo) ∧\n    (hi < x → f lo hi x = hi)",
+  "signature": "(lo hi x : Nat) : Nat",
+  "constraints": [
+    "Use only the supplied Std import.",
+    "Return an expression body and a proof term; do not add global declarations.",
+    "Use comparisons and branches rather than a library clamp."
+  ],
+  "forbidden_identifiers": [
+    "Nat.max",
+    "Nat.min",
+    "max",
+    "min"
+  ]
+}

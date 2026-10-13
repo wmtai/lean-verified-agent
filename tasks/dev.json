@@ -1,0 +1,12 @@
+[
+  "checked_subtraction",
+  "maximum",
+  "clamp",
+  "doubling",
+  "list_append",
+  "list_map",
+  "list_filter",
+  "list_reverse",
+  "accumulator_reverse",
+  "constant_folding"
+]

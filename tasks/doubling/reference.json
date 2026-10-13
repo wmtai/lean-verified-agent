@@ -1,0 +1,4 @@
+{
+  "implementation": "n + n",
+  "proof": "by\n  unfold Spec\n  intro n\n  simp [candidate, Nat.mul_comm, Nat.mul_succ]"
+}

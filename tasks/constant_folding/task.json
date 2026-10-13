@@ -1,0 +1,17 @@
+{
+  "id": "constant_folding",
+  "title": "Constant folding preserves expression evaluation",
+  "category": "program_transformation",
+  "split": "dev",
+  "specification": "inductive Expr where\n  | lit : Nat → Expr\n  | var : Expr\n  | add : Expr → Expr → Expr\n  deriving Repr, DecidableEq\n\ndef denote (env : Nat) : Expr → Nat\n  | .lit n => n\n  | .var => env\n  | .add l r => denote env l + denote env r\n\ndef Spec (f : Expr → Expr) : Prop :=\n  (∀ e env, denote env (f e) = denote env e) ∧\n  (∀ a b, f (.add (.lit a) (.lit b)) = .lit (a + b))",
+  "signature": "(e : Expr) : Expr",
+  "constraints": [
+    "Use only the supplied Std import.",
+    "Return an expression body and a proof term; do not add global declarations.",
+    "Use local structural recursion to fold both children.",
+    "Collapse an addition of two literals to their summed literal."
+  ],
+  "forbidden_identifiers": [
+    "denote"
+  ]
+}

@@ -1,0 +1,4 @@
+{
+  "implementation": "let rec go (rest acc : List Nat) : List Nat :=\n  match rest with\n  | [] => acc\n  | x :: tail => go tail (x :: acc)\ngo xs []",
+  "proof": "by\n  unfold Spec\n  have invariant : ∀ rest acc : List Nat,\n      candidate.go rest acc = rest.reverse ++ acc := by\n    intro rest\n    induction rest with\n    | nil => intro acc; rfl\n    | cons x rest ih =>\n      intro acc\n      simpa [candidate.go, List.reverse_cons, List.append_assoc] using ih (x :: acc)\n  intro xs\n  simpa [candidate] using invariant xs []"
+}

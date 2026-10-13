@@ -1,0 +1,19 @@
+{
+  "id": "list_filter",
+  "title": "Filter by a supplied Boolean predicate",
+  "category": "lists",
+  "split": "dev",
+  "specification": "def Spec (f : (Nat → Bool) → List Nat → List Nat) : Prop :=\n  ∀ p xs, f p xs = xs.filter p",
+  "signature": "(p : Nat → Bool) (xs : List Nat) : List Nat",
+  "constraints": [
+    "Use only the supplied Std import.",
+    "Return an expression body and a proof term; do not add global declarations.",
+    "Use a local structurally recursive function."
+  ],
+  "forbidden_identifiers": [
+    "List.filter",
+    "List.filterTR",
+    "filter",
+    "filterTR"
+  ]
+}

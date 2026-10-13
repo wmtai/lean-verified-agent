@@ -1,0 +1,4 @@
+{
+  "implementation": "if a ≤ b then b else a",
+  "proof": "by\n  unfold Spec\n  intro a b\n  by_cases h : a ≤ b\n  · simp [candidate, h]\n  · simp [candidate, h]\n    omega"
+}

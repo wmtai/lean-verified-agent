@@ -1,0 +1,4 @@
+{
+  "implementation": "if x < lo then lo else if hi < x then hi else x",
+  "proof": "by\n  unfold Spec\n  intro lo hi x hbounds\n  by_cases hlo : x < lo\n  · simp [candidate, hlo]\n    omega\n  · by_cases hhi : hi < x\n    · simp [candidate, hlo, hhi]\n      omega\n    · simp [candidate, hlo, hhi]\n      omega"
+}

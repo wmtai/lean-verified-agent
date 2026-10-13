@@ -1,0 +1,4 @@
+{
+  "implementation": "let rec go : List Nat → List Nat\n  | [] => []\n  | x :: tail => go tail ++ [x]\ngo xs",
+  "proof": "by\n  unfold Spec\n  intro xs\n  simp only [candidate]\n  induction xs with\n  | nil => rfl\n  | cons x xs ih =>\n    simpa [candidate.go, List.reverse_cons] using congrArg (fun ys => ys ++ [x]) ih"
+}

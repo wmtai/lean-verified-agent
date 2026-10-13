@@ -1,0 +1,4 @@
+{
+  "implementation": "let rec fold : Expr → Expr\n  | .lit n => .lit n\n  | .var => .var\n  | .add l r =>\n    match fold l, fold r with\n    | .lit a, .lit b => .lit (a + b)\n    | l', r' => .add l' r'\nfold e",
+  "proof": "by\n  unfold Spec\n  have invariant : ∀ e env,\n      denote env (candidate.fold e) = denote env e := by\n    intro e\n    induction e with\n    | lit n => intro env; rfl\n    | var => intro env; rfl\n    | add l r ihl ihr =>\n      intro env\n      change denote env (match candidate.fold l, candidate.fold r with\n        | .lit a, .lit b => .lit (a + b)\n        | l', r' => .add l' r') = denote env l + denote env r\n      have hl := ihl env\n      have hr := ihr env\n      cases eql : candidate.fold l <;> cases eqr : candidate.fold r <;>\n        simp only [eql, eqr, denote] at hl hr ⊢ <;> omega\n  constructor\n  · intro e env\n    simpa only [candidate] using invariant e env\n  · intro a b\n    rfl"
+}
