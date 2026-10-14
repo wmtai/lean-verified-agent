@@ -1,4 +1,0 @@
-{
-  "implementation": "let rec go (pred : Nat → Bool) : List Nat → List Nat\n  | [] => []\n  | x :: tail => if pred x then x :: go pred tail else go pred tail\ngo p xs",
-  "proof": "by\n  unfold Spec\n  intro p xs\n  simp only [candidate]\n  induction xs with\n  | nil => rfl\n  | cons x xs ih =>\n    cases hp : p x <;> simp [candidate.go, hp, ih]"
-}

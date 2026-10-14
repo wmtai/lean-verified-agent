@@ -1,5 +1,0 @@
-*
-!Dockerfile
-!lean/
-!lean/Trusted/
-!lean/Trusted/Audit.lean

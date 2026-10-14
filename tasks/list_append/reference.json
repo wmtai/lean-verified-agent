@@ -1,4 +1,0 @@
-{
-  "implementation": "let rec go (rest suffix : List Nat) : List Nat :=\n  match rest with\n  | [] => suffix\n  | x :: tail => x :: go tail suffix\ngo xs ys",
-  "proof": "by\n  unfold Spec\n  intro xs ys\n  have invariant : ∀ rest suffix : List Nat,\n      candidate.go rest suffix = rest ++ suffix := by\n    intro rest\n    induction rest with\n    | nil => intro suffix; rfl\n    | cons x rest ih =>\n      intro suffix\n      simpa [candidate.go] using congrArg (List.cons x) (ih suffix)\n  simpa [candidate] using invariant xs ys"
-}

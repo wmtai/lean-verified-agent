@@ -1,0 +1,10 @@
+{
+  "schema_version": 1,
+  "python_version": "3.12.15",
+  "lean_version": "4.34.1",
+  "fixture_timeout_seconds": 30,
+  "python_runtime_dependencies": [],
+  "lean_package_dependencies": [],
+  "current_exercise": 1,
+  "execution_scope": "manually reviewed Exercise 1 fixtures only"
+}

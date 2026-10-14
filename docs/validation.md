@@ -1,69 +1,46 @@
-# Validation record
+# Exercise 1 validation — 2026-10-14
 
-The initial implementation was checked with Python 3.14.6, Lean 4.34.1, and
-the provided Docker image.
+The new guided project was checked with Python **3.12.15**, Lean **4.34.1**,
+and Lake **5.0.0-src+5045d00**. Python has no third-party runtime dependencies;
+the Lake manifest has no external packages.
 
-- All 56 tests passed with real Lean integration enabled, including direct
-  audit rejection of unfinished proofs and transitive custom axioms.
-- All ten reviewed development references passed the Docker verifier's
-  initial audit and fresh recheck.
-- The recorded checked-subtraction demo returned `VERIFIED` after two model
-  replay calls, two attempts, and three Lean checks. The first attempt failed
-  with `unsolved_goals`; the second implementation and proof passed both checks.
-- Task listing, empty evaluation handling, trace aggregation, invalid budget
-  handling, and whitespace checks passed.
+The Python environment was synchronized from `uv.lock` using the installed,
+pinned interpreter. The environment checker built the trusted task library and
+recorded all three expected observations:
 
-These checks establish the supplied workflow and fixtures, not a held-out
-solve rate or improvement over another method. A live commercial model was
-not called; configure your provider and credentials for live experiments.
+| Fixture | Lean exit code | Observation |
+| --- | --- | --- |
+| `Correct.lean` | 0 | The theorem elaborated; executions printed `none` and `some 5`. |
+| `WrongImplementation.lean` | 0 | The well-typed function printed `some 0` on underflow. |
+| `WrongProof.lean` | 1 | The fixed correctness theorem had an unsolved underflow goal. |
 
-To repeat the direct audit tests on a reviewed local Lean installation:
+All **15 tests** passed with real Lean integration enabled: fourteen offline
+tests plus one integration test of the pinned environment and reviewed fixtures.
+The starter intentionally retains two `sorry` holes for the learner. These
+fixture checks do not complete that handwritten exercise or advance the course.
 
-```bash
-RUN_LEAN_INTEGRATION=1 LEAN_BINARY=/path/to/lean python3 -m unittest discover -s tests
-```
-
-For the default isolated workflow, run `python3 -m agent check-fixtures` and
-`python3 -m agent demo` after building the verifier image.
-
-## T01 expression boundary — 2026-10-13
-
-The working-tree changes following baseline commit `3f3eb6a` were checked with
-Python 3.14.6 and the pinned Lean 4.34.1 compiler.
-
-- All 64 tests passed with local Lean integration enabled, including the
-  existing direct dependency-audit cases and six new term-boundary tests.
-- All six term-boundary integration tests passed in the rebuilt Docker image.
-  The tests cover both output fields, trailing command input, parsing both
-  fields before elaboration, escaped-data transport, local recursion/invariants,
-  and a rejected candidate followed by an accepted repair.
-- All ten development references passed both Docker checks.
-- The recorded Docker demo returned `VERIFIED` after two attempts, two replay
-  calls, and three Lean checks, with the first failure categorized as
-  `unsolved_goals`.
-- `git diff --check` passed. No live provider was called.
-
-The rebuilt image `lean-verified-agent-verifier:4.34.1` had image ID
-`sha256:0d5e1813bd45c71056183a4b7e210342e0476a5f5ea35e73ca30843ef442798c`.
-Local Docker fixture/demo records were written to
-`/tmp/lean-agent-t01-docker-fixtures` and `/tmp/lean-agent-t01-docker-demo`;
-these temporary paths are not portable repository artifacts.
-
-Commands for the full reviewed local test suite and the Docker boundary suite:
+Commands used from the repository root:
 
 ```bash
-RUN_LEAN_INTEGRATION=1 LEAN_TEST_BACKEND=local LEAN_BINARY=/path/to/lean \
-  python3 -m unittest discover -s tests -v
-bash scripts/build-verifier.sh
-RUN_LEAN_INTEGRATION=1 LEAN_TEST_BACKEND=docker \
-  python3 -m unittest discover -s tests -p test_candidate_boundary.py -v
-python3 -m agent check-fixtures
-python3 -m agent demo
+uv --cache-dir /tmp/fixed-spec-lean-agent-uv-cache sync \
+  --locked --offline --python 3.12.15
+.venv/bin/python -m scripts.check_environment \
+  --lake /tmp/lean-4.34.1-linux/bin/lake \
+  --report runs/exercise01/environment.json
+RUN_LEAN_INTEGRATION=1 LAKE_BINARY=/tmp/lean-4.34.1-linux/bin/lake \
+  .venv/bin/python -m unittest discover -s tests -v
 ```
 
-The default Python test command skips all eight Lean integration tests.
-The CI Docker job explicitly enables the six boundary tests. These checks
-establish the structural expression boundary for the tested grammar and
-workflow; the compiler/kernel, trusted modules/tasks, and container runtime
-remain part of the verification assumptions described in
-[verification details](verification.md).
+The `/tmp` paths are specific to this development environment. Use your installed
+pinned Lake and the normal `uv sync --locked` command on another machine.
+The generated report records actual versions, fixture diagnostics, and SHA-256
+hashes of the configuration, lockfiles, task specification, and reviewed fixtures.
+
+The earlier implementation is preserved in Git at `6dca91f` and in the local
+archive `/tmp/lean-verified-agent-before-guided-rewrite-20261014-323ded13.tar.gz`.
+The old source files and generated results were removed from this checkout.
+CI has been configured for the new exercise; hosted CI was not run here.
+
+No model was called. These are local checks of reviewed educational code.
+Sandboxing and final challenge–solution acceptance remain Exercises 3 and 4;
+this exercise makes no final-agent `VERIFIED` claim.

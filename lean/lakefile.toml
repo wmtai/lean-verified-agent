@@ -1,6 +1,8 @@
-name = "LeanVerifiedAgent"
+name = "FixedSpecLeanAgent"
 version = "0.1.0"
-defaultTargets = ["Trusted"]
+defaultTargets = ["TaskSpecifications"]
 
 [[lean_lib]]
-name = "Trusted"
+name = "TaskSpecifications"
+srcDir = ".."
+roots = ["tasks.development.checked_subtraction.Specification"]

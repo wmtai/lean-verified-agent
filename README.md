@@ -1,178 +1,84 @@
-# Lean Verified Agent
+# Fixed-Spec Lean Agent
 
-A Python controller that asks an LLM for a Lean 4 implementation and correctness
-proof, checks them against a fixed specification, and repairs failed attempts
-within a resource budget. A successful run saves the accepted Lean artifact;
-an unsuccessful run reports `UNSOLVED_WITHIN_BUDGET` and preserves its trace.
+A guided project in which Python will control the generation, checking, and
+repair of Lean implementations and correctness proofs. The formal specification
+and acceptance rules remain fixed throughout a run.
 
-This implements the engineering stage of the supplied
-[project brief](docs/project-brief.md). It includes ten development contracts,
-reviewed reference solutions, four agent strategies, and experiment analysis.
-It does not claim a research improvement or include a held-out benchmark yet.
+**Current exercise: 1 — Build a reproducible project environment.** This checkout
+contains the environment, a trusted checked-subtraction task, reviewed fixtures,
+and a learner starter file. Follow the
+[Exercise 1 guide](exercises/01-environment/README.md), then say **OK** when you
+are ready to advance. Each later exercise will add concepts, worked examples,
+starter code, and acceptance tests to this same repository.
 
-```mermaid
-flowchart LR
-  T[Fixed Lean contract] --> M[Generate implementation and proof]
-  M --> P[Check candidate policy]
-  P --> L[Isolated Lean check and axiom audit]
-  L -->|diagnostics| M
-  L -->|accepted| R[Fresh recheck]
-  R --> A[Save VERIFIED artifact]
-  M -->|budget exhausted| U[Save unsuccessful trace]
-```
+## Get started
 
-## Quick start
+Use [`uv`](https://docs.astral.sh/uv/getting-started/installation/) for the Python
+environment and either [`elan`](https://github.com/leanprover/elan#installation)
+or a standalone installation of the pinned Lean toolchain. The project uses
+**Python 3.12.15** and
+**Lean 4.34.1**. There are no third-party Python runtime dependencies in Exercise 1.
 
-Requirements: Python 3.11 or newer and Docker on Linux x86-64 (the provided
-verifier image targets this architecture). The controller has no required
-Python dependencies. Run commands from this repository's root.
+From the repository root:
 
 ```bash
-python3 -m agent tasks
-bash scripts/build-verifier.sh
-python3 -m agent demo
+uv sync --locked --python 3.12.15
+.venv/bin/python -m scripts.check_environment \
+  --report runs/exercise01/environment.json
+.venv/bin/python -m unittest discover -s tests -v
 ```
 
-The demo uses two recorded responses and **real Lean verification**, without an
-API key. Its first implementation always returns `some (a - b)`, which fails
-the checked-subtraction contract. The second handles underflow and proves the
-contract. Expected outcome: `VERIFIED`, two attempts, three Lean checks
-(one failed check plus two checks of the successful candidate).
+If Lake is not on your `PATH`, select a pinned standalone installation explicitly:
 
 ```bash
-python3 -m unittest discover -s tests -v
-python3 -m agent check-fixtures
+.venv/bin/python -m scripts.check_environment \
+  --lake /path/to/lean-4.34.1-linux/bin/lake \
+  --report runs/exercise01/environment.json
 ```
 
-The initial implementation passed all 56 tests (including real Lean audit
-tests), all ten references in Docker, and the repair demo. See the
-[validation record](docs/validation.md) for the tested scope.
-
-An optional editable install exposes the same CLI as `lean-agent`:
+`LAKE_BINARY` can also select that Lake executable. To include the real Lean
+integration tests:
 
 ```bash
-python3 -m venv .venv
-. .venv/bin/activate
-python3 -m pip install -e .
+RUN_LEAN_INTEGRATION=1 .venv/bin/python -m unittest discover -s tests -v
 ```
 
-The CLI resolves task and Lean assets from the checkout; keep the checkout, or
-pass `--root /path/to/lean-verified-agent` when using an installed entry point.
+The ordinary test command skips those integration tests. The environment checker
+builds the trusted task library and checks the reviewed fixtures. It records the
+actual tool versions and observed outcomes in the requested JSON report.
 
-## Live model runs
+## What Exercise 1 demonstrates
 
-The client accepts a provider implementing the Chat Completions JSON interface.
-Export credentials in your shell; `.env.example` documents the variables and
-the CLI does not automatically load `.env` files. The provider must support
-`max_tokens` and return text content and token usage. Select a model explicitly.
+The correct checked-subtraction fixture compiles with its correctness theorem.
+The wrong implementation also compiles when checked on its own: it is a
+well-typed Lean program. Its attempted proof of the fixed contract fails. These
+three outcomes show why compiling an implementation and establishing its
+correctness are separate obligations.
 
-```bash
-export LLM_BASE_URL='https://your-provider.example/v1'
-export LLM_MODEL='your-model-name'
-read -rsp 'API key: ' LLM_API_KEY
-export LLM_API_KEY
-python3 -m agent run --task checked_subtraction --strategy repair --max-calls 5
-```
+This is a development exercise using reviewed files. Sandboxed execution is
+introduced in Exercise 3; the trusted final acceptance gate is introduced in
+Exercise 4, before model-generated Lean. The environment report records checks;
+it does not issue the final agent's `VERIFIED` verdict.
 
-Model responses contain exactly two JSON strings:
+## Project map
 
-```json
-{
-  "implementation": "if b ≤ a then some (a - b) else none",
-  "proof": "by\n  constructor\n  · intro a b h\n    simp [candidate, h]\n  · intro a b h\n    have hn : ¬ b ≤ a := by omega\n    simp [candidate, hn]"
-}
-```
-
-The controller supplies the definition header, theorem statement, namespace,
-imports, specification, and acceptance commands. The model can introduce local
-helpers with `let rec` and `have`; global helper declarations are intentionally
-outside this first version's candidate format.
-
-The verifier transports both bodies as escaped data to a trusted Lean command.
-It parses each as exactly one term before constructing the declarations, so
-candidate text cannot introduce extra top-level commands. This parsing runs
-inside the same isolated verifier as the proof check and dependency audit.
-
-## Strategies and experiments
-
-| Strategy | Behavior |
+| Location | Role now |
 | --- | --- |
-| `one-shot` | One generated implementation and proof |
-| `sampling` | Fresh attempts without previous candidates or diagnostics |
-| `repair` | Previous candidate and Lean feedback guide the next attempt |
-| `planning` | A separate algorithm/invariant plan precedes generation and repair |
+| `configs/environment.json` | Expected versions and fixture timeout |
+| `.python-version`, `pyproject.toml`, `uv.lock` | Python interpreter and dependency configuration |
+| `lean/` | Pinned toolchain and Lake library configuration |
+| `tasks/development/checked_subtraction/` | Trusted metadata, specification, and candidate template |
+| `exercises/01-environment/fixtures/` | Reviewed examples with contrasting outcomes |
+| `exercises/01-environment/starter/Candidate.lean` | Your implementation and proof exercise |
+| `scripts/check_environment.py`, `tests/` | Environment checks and regression tests |
+| `runs/` | Generated local reports |
 
-```bash
-python3 -m agent evaluate --split dev --strategies sampling repair planning \
-  --max-calls 5 --max-lean-checks 10 --max-tokens 30000 --max-seconds 300
-python3 -m agent analyze results/<experiment-directory> --csv results/summary.csv
-```
+The [roadmap](docs/roadmap.md) distinguishes the ten exercises you complete from
+the programming tasks the eventual agent will attempt. The full
+[project brief](docs/project-brief.md) defines the final design, including ten
+development tasks and twenty held-out evaluation tasks.
 
-Sampling and repair use the same caps. Planning calls and tokens consume those
-caps too; one-shot remains a descriptive single-call baseline. Each successful
-candidate needs a fresh recheck, so the controller reserves two verification
-slots before starting an attempt. The token cap includes prompt and completion
-usage; preflight estimates are conservative accounting aids rather than a
-provider tokenizer or a hard billing guarantee. See
-[experiment design](docs/experiments.md) before interpreting comparisons.
-
-Run folders contain prompts, raw responses, candidate fields, rendered Lean
-source, diagnostics, and `result.json`. Results record task hashes, calls,
-tokens, Lean checks, elapsed time, implementation/proof revisions, and failure
-categories. API credentials are never written to traces. Infrastructure or
-provider failures report `ERROR`; a failed proof alone does not establish an
-incorrect implementation.
-
-## Verification boundary
-
-The Docker runner is the default. It uses a pinned Lean 4.34.1 compiler,
-disabled networking, a read-only filesystem, an unprivileged user, dropped
-capabilities, and limits on time, memory, processes, and output. Only the
-candidate file is mounted. It never falls back to host execution.
-
-Acceptance requires the unchanged contract, policy checks, successful Lean
-elaboration, an audit of both implementation and proof dependencies, and a
-second successful check in a fresh process. Only the standard logical axioms
-`propext`, `Classical.choice`, and `Quot.sound` are accepted. Unfinished proofs,
-new axioms, unsafe code, native proof shortcuts, and metaprogramming commands
-are rejected. This follows the axiom-checking guidance in Lean's
-[proof validation documentation](https://lean-lang.org/doc/reference/latest/ValidatingProofs/).
-
-This is a restricted research prototype. Its lexical policy is conservative;
-it is not a full Lean parser or a proof of resistance to arbitrary malicious
-Lean/compiler exploits. Two fresh runs use the same Lean kernel, not an
-independently implemented proof checker. Trusted tasks and the verifier image
-must be reviewed. [Verification details](docs/verification.md) explain the
-scope and how to extend it.
-
-If Docker is unavailable, you may explicitly run **reviewed fixture code** on a
-local installation of the pinned compiler:
-
-```bash
-export PATH='/path/to/lean-4.34.1-linux/bin:'"$PATH"
-python3 -m agent demo --backend local --allow-local
-python3 -m agent check-fixtures --backend local --allow-local
-```
-
-Local execution does not isolate elaboration. Use the default Docker runner for
-live LLM candidates.
-
-## Repository layout
-
-```text
-agent/          provider clients, prompts, repair policy, controller, CLI
-verifier/       candidate policy, source assembly, isolated Lean runner
-lean/Trusted/   trusted dependency audit
-tasks/          fixed contracts and separate reviewed reference solutions
-examples/       recorded failure-and-repair responses
-experiments/    matched-budget runs and JSON/CSV analysis
-tests/          controller, policy, process, and data tests
-docs/           brief, task design, verification, research roadmap
-results/        generated traces (ignored by Git)
-```
-
-Next steps: add separately audited evaluation contracts, compare repair with
-sampling under matched budgets, then evaluate an action policy choosing proof
-repair, implementation changes, stronger invariants, or replanning. Audit
-larger benchmarks and permit structured global helpers before adding tasks
-such as insertion sort that require substantial auxiliary declarations.
+The earlier implementation was archived at
+`/tmp/lean-verified-agent-before-guided-rewrite-20261014-323ded13.tar.gz`; its Git
+history remains available at commit `6dca91f`. This rewrite starts the guided
+curriculum at Exercise 1.

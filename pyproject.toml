@@ -1,22 +1,10 @@
-[build-system]
-requires = ["setuptools>=68"]
-build-backend = "setuptools.build_meta"
-
 [project]
-name = "lean-verified-agent"
+name = "fixed-spec-lean-agent"
 version = "0.1.0"
-description = "Bounded LLM generation and repair of Lean 4 programs against fixed contracts"
+description = "A guided ten-exercise project in fixed-spec Lean code generation"
 readme = "README.md"
-requires-python = ">=3.11"
-license = {text = "MIT"}
+requires-python = "==3.12.15"
 dependencies = []
 
-[project.scripts]
-lean-agent = "agent.cli:main"
-
-[tool.setuptools]
-packages = ["agent", "verifier", "experiments"]
-
-[tool.ruff]
-target-version = "py311"
-line-length = 100
+[tool.uv]
+package = false

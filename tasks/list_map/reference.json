@@ -1,4 +1,0 @@
-{
-  "implementation": "let rec go (fn : Nat → Nat) : List Nat → List Nat\n  | [] => []\n  | x :: tail => fn x :: go fn tail\ngo g xs",
-  "proof": "by\n  unfold Spec\n  intro g xs\n  simp only [candidate]\n  induction xs with\n  | nil => rfl\n  | cons x xs ih => simpa [candidate.go] using congrArg (List.cons (g x)) ih"
-}

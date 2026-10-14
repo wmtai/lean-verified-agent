@@ -1,0 +1,8 @@
+version = 1
+revision = 5
+requires-python = "==3.12.15"
+
+[[package]]
+name = "fixed-spec-lean-agent"
+version = "0.1.0"
+source = { virtual = "." }

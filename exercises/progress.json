@@ -1,0 +1,8 @@
+{
+  "schema_version": 1,
+  "current_exercise": 1,
+  "state": "awaiting_learner_review",
+  "advance_only_after_user_ok": true,
+  "completed_exercises": [],
+  "later_exercises_implemented": false
+}
