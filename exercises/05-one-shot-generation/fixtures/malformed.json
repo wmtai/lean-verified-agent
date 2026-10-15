@@ -1,0 +1,24 @@
+{
+  "id": "replay_malformed",
+  "model": "replay-reviewed-fixture",
+  "status": "completed",
+  "output": [
+    {
+      "type": "message",
+      "role": "assistant",
+      "content": [
+        {
+          "type": "output_text",
+          "text": "Here is the answer:\n```json\n{\n  \"implementation_body\": \"if b ≤ a then some (a - b) else none\",\n  \"proof_body\": \"by\\n  unfold TaskSpec.CheckedSubSpec\\n  constructor\\n  · intro a b h\\n    simp [candidate, h]\\n  · intro a b h\\n    have hnot : ¬ b ≤ a := by omega\\n    simp [candidate, hnot]\"\n}\n```"
+        }
+      ]
+    }
+  ],
+  "usage": {
+    "input_tokens": 120,
+    "output_tokens": 95,
+    "output_tokens_details": {
+      "reasoning_tokens": 0
+    }
+  }
+}

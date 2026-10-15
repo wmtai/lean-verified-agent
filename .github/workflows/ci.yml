@@ -1,4 +1,4 @@
-name: Exercise 1 checks
+name: Completed exercise regressions
 
 on: [push, pull_request]
 
@@ -23,10 +23,20 @@ jobs:
           echo "$RUNNER_TEMP/lean/bin" >> "$GITHUB_PATH"
       - name: Check the reviewed environment fixtures
         run: python -m scripts.check_environment
-      - name: Run Python and real Lean acceptance tests for this exercise
+      - name: Run environment and supplied setup regressions
         run: python -m unittest discover -s tests -v
         env:
           RUN_LEAN_INTEGRATION: '1'
+      - name: Run completed Exercise 2 acceptance tests
+        run: python -m unittest discover -s exercises/02-tasks-and-submissions/tests -v
+      - name: Run supplied runner infrastructure tests
+        run: python -m unittest discover -s exercises/03-sandboxed-runner/tests -v
+      - name: Run supplied acceptance infrastructure tests
+        run: python -m unittest discover -s exercises/04-trusted-acceptance/tests -v
+      - name: Run completed Exercise 5 generation tests
+        run: python -m unittest discover -s exercises/05-one-shot-generation/tests -v
+      - name: Run completed Exercise 6 repair tests
+        run: python -m unittest discover -s exercises/06-feedback-repair/tests -v
       - uses: actions/upload-artifact@v4
         if: always()
         with:

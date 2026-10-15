@@ -17,7 +17,27 @@ There are **two kinds of code** in this project:
 
 **We are not generating Python programs and translating them into Lean.** Python controls the workflow; the programs being verified are written directly in Lean.
 
-We will build this through **ten cumulative implementation exercises**. This response gives the full project design and roadmap. Each actual exercise will subsequently introduce its concepts with worked examples, provide starter code and acceptance tests, and remain the current exercise until you say **OK**.
+We will build this through **ten cumulative exercises**. Each lesson introduces
+its concepts with worked examples, focused learner tasks, and supplied checks.
+
+**Current teaching design:** Exercises 1 and 2 are complete. Starting with
+Exercise 3, learner work focuses on Lean programs/proofs and agent generation,
+checking, and repair decisions. System implementation is supplied: process
+management, Docker isolation, API transport, logging, resource accounting, and
+experiment persistence are support services. Later services are added when
+their exercise is reached. This note and the revised Section 12 supersede the
+original infrastructure-programming assignments; the final system scope is
+unchanged. The active guide is
+[Exercise 3 — Read Lean feedback and repair a proof](../exercises/03-sandboxed-runner/README.md).
+
+The first **OK** requests review and feedback. After a passing review, another
+**OK** advances to the next exercise. Required fixes keep the current exercise
+active.
+
+**Learner preference:** from Exercise 3 onward, completion is assessed through
+implementations and check results. Written Q&A, reflection worksheets, and oral
+explanation requirements are omitted. Technical explanations remain available
+in the lesson material and on request.
 
 ---
 
@@ -627,121 +647,180 @@ We will test missing response fields, invalid field types, unexpected declaratio
 
 ---
 
-## Exercise 3 — Implement a sandboxed Lean runner
+## Exercise 3 — Read Lean feedback and repair a proof
 
-**Objective:** execute candidate checks without exposing the main workspace.
+**Objective:** learn to turn compiler observations into a justified repair action.
 
-You will implement isolated work directories, process execution, timeout handling, bounded diagnostic capture, and structured run results.
+You will run supplied syntax/proof examples, read their raw Lean diagnostics,
+and repair the proof of a fixed, correct checked-subtraction implementation.
+You may change only the proof body; the implementation and required contract
+stay fixed. The supplied command retains the observed goal and repaired run.
 
-The new concepts are subprocess management, resource limits, failure propagation, and sandbox boundaries.
+**Supplied system implementation:** isolated work directories, bounded process
+execution, restricted Docker workers, time/memory/process limits, compiler
+version checks, immutable attempt artifacts, and structured execution outcomes.
+These are working support components, not learner implementation tasks.
 
-Worked examples will distinguish syntax errors, unresolved proof obligations, and process timeouts.
+The new concepts are hypotheses and goals, conditional simplification,
+proof-only repair, and the distinction between a compiler observation and an
+interpretation. Syntax and proof failures can share `ELABORATION_FAILED`; read
+the logs to distinguish them. An unsolved goal alone does not show that a program
+is wrong.
 
-**Completion criterion:** the runner classifies these observable outcomes, preserves logs, terminates timed-out work, and does not give candidate code access to protected files or credentials.
-
----
-
-## Exercise 4 — Implement the trusted acceptance gate
-
-**Objective:** distinguish “Lean ran successfully” from “the original task was solved.”
-
-You will integrate challenge–solution checking for fixed theorem statements and allowed implementation holes, configure the permitted-axiom policy, and add final validation in a fresh checking context.
-
-The new concepts are proof dependencies, trusted challenges, permitted assumptions, and fail-closed acceptance.
-
-The test suite will include valid solutions, direct and indirect unfinished proofs, a custom axiom, an altered contract, and a missing required declaration.
-
-**Completion criterion:** only submissions satisfying the configured acceptance policy receive `VERIFIED`. A missing checker or failed validation produces an explicit non-success status.
-
-This exercise is completed before unrestricted model-generated Lean is introduced.
+**Completion criterion:** the learner proof elaborates without weakening the
+contract, and all reviewed diagnostic examples produce their expected outcomes.
+`ELABORATED` is not the final `VERIFIED` verdict. No LLM is called yet.
 
 ---
 
-## Exercise 5 — Connect an LLM for one-shot generation
+## Exercise 4 — Understand and apply trusted acceptance
+
+**Objective:** determine whether a candidate solved the original fixed task.
+
+You will inspect contrasting Lean examples: valid solutions, direct/indirect
+unfinished proofs, custom axioms, altered contracts, and missing declarations.
+Construct and repair candidates exercising theorem correspondence and proof
+dependencies. Check a counterexample against an inadequate contract.
+
+**Supplied system implementation:** pinned challenge–solution checking,
+Comparator integration, allowed definition holes, explicit permitted-axiom
+configuration, fresh final checking, and retained acceptance records.
+
+The new concepts are trusted challenges, transitive assumptions, specification
+adequacy, and acceptance relative to an explicit policy.
+
+**Completion criterion:** the candidate examples produce the expected acceptance
+results. Only candidates satisfying the configured final policy receive
+`VERIFIED`; an unavailable checker is an explicit non-success. This gate is
+established before unrestricted model-generated Lean is introduced.
+
+---
+
+## Exercise 5 — Design the one-shot LLM flow
 
 **Objective:** generate the first implementation-and-proof proposal automatically.
 
-You will implement a model-client interface, a fake/replay client, one real provider adapter, the initial prompt, response parsing, and one-shot execution.
+You will write the generation prompt, decide what task information the model
+receives, and connect the load → generate → parse → check flow through the
+supplied interfaces. Start with replayed output, then run a real model.
 
-The new concepts are API boundaries, structured model output, configuration, and test doubles.
+**Supplied system implementation:** replay and real-provider model adapters,
+API configuration/transport, response parsing, command-line entry point, and
+artifact persistence. Credentials remain outside the Lean worker.
 
-We will first use replayed responses so parser and controller bugs do not require repeated paid calls.
+The new concepts are prompt contracts, agent-visible information, structured
+model proposals, and distinguishing provider errors from unsuccessful proofs.
 
-**Completion criterion:** one command loads a task, obtains a proposal, checks it, and saves the full outcome. Model/API failure is distinguished from failure to solve the Lean task.
+**Completion criterion:** a replayed and real-model attempt preserve the task,
+proposal, diagnostics, acceptance result, and resource observations. The model
+need not solve every task. LLM generation begins in this exercise.
 
 ---
 
-## Exercise 6 — Add verifier-guided repair
+## Exercise 6 — Add verifier-guided repair decisions
 
 **Objective:** turn one-shot generation into an iterative agent.
 
-You will implement attempt history, repair prompts, remaining-budget checks, stopping conditions, and preservation of every candidate.
+You will implement repair prompt content, attempt-state transitions, action
+selection, and stopping behavior. Decide what evidence to send back and when a
+proof-only revision is justified. Contrast a missing proof step with a checked
+counterexample that establishes a behavioral defect.
 
-The new concepts are stateful control loops, evidence-based feedback, and resource accounting.
+**Supplied system implementation:** immutable attempt history, model calls,
+resource accounting, budget guards, artifact storage, and deterministic replay
+fixtures. Planning and malformed responses consume the same configured budgets.
 
-Examples will include a proof-only repair and a repair that changes the implementation after a genuine behavioral error is identified.
+The new concepts are feedback-driven control flow, bounded search, and the
+difference between observed diagnostics and a proposed diagnosis.
 
-**Completion criterion:** a replayed sequence of failed and corrected attempts behaves deterministically, respects the budget, and stops immediately after accepted success.
-
-You will also run the loop against the real model, without assuming every task will succeed.
-
----
-
-## Exercise 7 — Support helper lemmas and proof-aware planning
-
-**Objective:** handle tasks that need more than local tactic changes.
-
-You will extend proposals with permitted helper declarations and add planning, proof-only repair, and implementation-and-proof revision modes.
-
-The new concepts are generalized invariants, modular proofs, implementation choices, and explicit agent actions.
-
-Accumulator reversal will be a central example: the agent must preserve the original contract while introducing a theorem generalized over the accumulator.
-
-**Completion criterion:** helper declarations are checked under the same acceptance policy, planning is logged and counted toward the budget, and a proof-only mode actually preserves the implementation.
+**Completion criterion:** a replayed failed/corrected sequence follows the intended
+actions, stays within all caps, preserves attempts, and stops immediately after
+accepted success. Exercise the flow against the real model too.
 
 ---
 
-## Exercise 8 — Build and audit the task suite
+## Exercise 7 — Write helpers and plan implementation with proof
+
+**Objective:** handle tasks that need a stronger auxiliary theorem or a different
+implementation strategy.
+
+You will prove a generalized invariant for accumulator reversal, plan code and
+proof structure together, and implement agent decisions among proof repair,
+helper introduction, implementation redesign, and restart. The main theorem
+remains unchanged.
+
+**Supplied system implementation:** controlled helper assembly, helper dependency
+checks under the same acceptance policy, logged actions, planning-call transport,
+and resource accounting.
+
+The new concepts are generalized invariants, modular proofs, and explicit repair
+actions. A proof-only action must actually preserve the implementation.
+
+**Completion criterion:** the helper supports the original contract, planning is
+preserved and counted, and replayed actions obey their allowed edit scope.
+
+---
+
+## Exercise 8 — Audit Lean task contracts and reference solutions
 
 **Objective:** create trustworthy development and evaluation data.
 
-You will package the development tasks, prepare held-out tasks, verify reference solutions, record allowed-library policies, and keep answer material outside the agent workspace.
+You will audit ten development tasks and twenty held-out tasks, check reference
+solutions, document allowed-library policies, and justify the family split.
+Contrast a complete sorting specification with one requiring only sorted output,
+and a meaningful held-out task with a superficial renaming.
 
-The new concepts are specification adequacy, task-family splits, leakage, and benchmark integrity.
+**Supplied system implementation:** task packaging/loading, reference-check
+commands, provenance storage, and separate evaluator-controlled reference
+locations inaccessible to the agent.
 
-Worked examples will contrast a complete sorting specification with one that only requires sorted output, and a meaningful held-out task with a superficial renaming.
+The new concepts are specification adequacy, algorithmic intent, leakage, and
+benchmark integrity.
 
-**Completion criterion:** every included task has an audited contract and checked reference solution; the split and provenance are documented before final evaluation.
-
----
-
-## Exercise 9 — Implement controlled comparisons
-
-**Objective:** compare methods rather than collect isolated demonstrations.
-
-You will implement one-shot generation, independent sampling, verifier-guided repair, and planning-plus-repair under a common experiment interface.
-
-The new concepts are baselines, matched budgets, repeated runs, and measurement.
-
-You will produce machine-readable results and summaries of solve rate, resource use, and failure categories.
-
-**Completion criterion:** the evaluator can reproduce a small comparison from saved configurations, counts all relevant model work, and does not silently discard failed or expensive runs.
+**Completion criterion:** every included task has an audited contract and checked
+reference; the split and provenance are fixed before final evaluation.
 
 ---
 
-## Exercise 10 — Analyze failures and release the finished project
+## Exercise 9 — Design controlled strategy comparisons
 
-**Objective:** turn the implementation into an interpretable research artifact.
+**Objective:** compare generation and repair methods under comparable resources.
 
-You will inspect representative runs, identify whether successful repairs changed code, proof structure, or helper lemmas, and evaluate one predefined repair-policy variation.
+You will define one-shot, independent sampling, feedback repair, and
+planning-plus-repair policies, choose matched budgets and repeated runs, and
+interpret their outcomes. Make infrastructure reruns follow a predetermined
+policy.
 
-A suitable variation is a staged policy: try local proof repair first, then permit implementation redesign after repeated lack of progress. This is a hypothesis to test, not an assumed improvement.
+**Supplied system implementation:** experiment scheduling, common strategy
+interfaces, result persistence, resource aggregation, and repeatable summary
+commands.
 
-The new concepts are ablations, failure analysis, reproducibility, and carefully bounded conclusions.
+The new concepts are baselines, matched budgets, repeated runs, and uncertainty.
 
-**Completion criterion:** the repository contains a working command-line tool, acceptance tests, configuration snapshots, reproducible results, and a report explaining what helped, what failed, and what remains unestablished.
+**Completion criterion:** saved configurations reproduce a small comparison,
+account for all relevant model work, and retain failed and expensive runs.
+The full target remains ten development and twenty held-out tasks.
 
-A negative experimental result is acceptable. The project does not need to outperform every baseline to be complete.
+---
+
+## Exercise 10 — Analyze repair traces and explain the results
+
+**Objective:** turn the agent and its runs into an interpretable research artifact.
+
+You will inspect representative successes/failures, distinguish changes to
+implementation, proof, and helper structure, and test one predefined repair
+policy variation. For example, compare staged proof-first repair with allowing
+implementation redesign earlier. Treat the variation as a hypothesis.
+
+**Supplied system implementation:** trace summaries, plotting/aggregation
+commands, reproducibility checks, and release packaging.
+
+The new concepts are ablations, evidence-based failure analysis, reproducibility,
+and bounded conclusions.
+
+**Completion criterion:** the final CLI and retained configurations reproduce the
+reported analysis, and the report explains what helped, failed, and remains
+unestablished. A negative result is acceptable.
 
 ---
 
@@ -804,4 +883,7 @@ A later contribution could use diagnostic evidence to choose repair actions more
 
 **The project’s governing principle is simple: the LLM may explore and revise; the formal specification and acceptance rules remain fixed.**
 
-Say **OK** to begin **Exercise 1 — Build a Reproducible Project Environment**.
+Exercises 1–3 passed review. Exercise 4 is now current; follow its
+[Lean acceptance-repair guide](../exercises/04-trusted-acceptance/README.md).
+Remaining exercises are assessed through implementations and check results,
+without written Q&A or reflection requirements.

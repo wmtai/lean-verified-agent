@@ -48,9 +48,9 @@ class EnvironmentTests(unittest.TestCase):
             ".python-version": PYTHON_VERSION + "\n",
             "pyproject.toml": '[project]\nname = "exercise-one"\nversion = "0.1.0"\n',
             "uv.lock": "version = 1\n",
-            "lean/lean-toolchain": "leanprover/lean4:v4.34.1\n",
-            "lean/lakefile.toml": 'name = "exercise"\n',
-            "lean/lake-manifest.json": '{"packages": []}\n',
+            "lean-toolchain": "leanprover/lean4:v4.34.1\n",
+            "lakefile.toml": 'name = "exercise"\n',
+            "lake-manifest.json": '{"packages": []}\n',
             str(SPECIFICATION): "namespace TaskSpec\nend TaskSpec\n",
             "tasks/development/checked_subtraction/task.json": '{"id":"checked_subtraction"}\n',
         }
@@ -88,7 +88,7 @@ class EnvironmentTests(unittest.TestCase):
             for name, _ in FIXTURES
         ])
         for call in execute.call_args_list:
-            self.assertEqual(call.kwargs["cwd"], self.root / "lean")
+            self.assertEqual(call.kwargs["cwd"], self.root)
             self.assertEqual(call.kwargs["timeout"], 30)
             self.assertEqual(call.kwargs["stdin"], subprocess.DEVNULL)
         self.assertNotIn("VERIFIED", json.dumps(report))
@@ -100,7 +100,7 @@ class EnvironmentTests(unittest.TestCase):
         execute.assert_not_called()
 
     def test_python_and_lean_pins_must_match_recorded_configuration(self):
-        for relative, wrong_pin in ((".python-version", "3.11.9"), ("lean/lean-toolchain", "leanprover/lean4:v4.30.0")):
+        for relative, wrong_pin in ((".python-version", "3.11.9"), ("lean-toolchain", "leanprover/lean4:v4.30.0")):
             with self.subTest(relative=relative):
                 path = self.root / relative
                 original = path.read_text()
@@ -226,6 +226,20 @@ class ReviewedLeanIntegrationTests(unittest.TestCase):
         self.assertTrue(report["exercise1_checks_passed"], json.dumps(report, indent=2))
         self.assertEqual(len(report["fixtures"]), 3)
         self.assertTrue(all(row["expected_observation_met"] for row in report["fixtures"]))
+        # The editor must discover the same Lake project from learner files,
+        # rather than treating them as standalone files with only core imports.
+        starter = DEFAULT_ROOT / "exercises/01-environment/starter/Candidate.lean"
+        project = next(parent for parent in starter.parents if (parent / "lakefile.toml").is_file())
+        self.assertEqual(project, DEFAULT_ROOT)
+        setup = subprocess.run(
+            [report["lake_binary"], "setup-file", str(starter)], cwd=project,
+            capture_output=True, text=True, timeout=30, check=False,
+        )
+        self.assertEqual(setup.returncode, 0, setup.stdout + setup.stderr)
+        module = "tasks.development.checked_subtraction.Specification"
+        artifacts = json.loads(setup.stdout)["importArts"][module]
+        self.assertTrue(artifacts)
+        self.assertTrue(all(Path(artifact).is_file() for group in artifacts for artifact in group))
 
 
 if __name__ == "__main__":

@@ -1,15 +1,13 @@
 import tasks.development.checked_subtraction.Specification
 
 /-
-Replace the two holes while preserving the import, declaration names, function
-signature, and theorem statement. `sorry` marks unfinished work: Lean may accept
-it with a warning, but an unfinished proof does not complete this task.
+Trusted Exercise 2 text template. The renderer replaces the two placeholders;
+all other text, including the import and declaration headers, stays fixed.
+This file is not a complete Lean program before its placeholders are filled.
 -/
 
 def candidate (a b : Nat) : Option Nat :=
-  -- IMPLEMENTATION HOLE
-  sorry
+{{implementation_body}}
 
-theorem candidate_correct : TaskSpec.CheckedSubSpec candidate := by
-  -- PROOF HOLE
-  sorry
+theorem candidate_correct : TaskSpec.CheckedSubSpec candidate :=
+{{proof_body}}

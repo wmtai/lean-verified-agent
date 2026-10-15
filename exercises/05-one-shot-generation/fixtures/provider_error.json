@@ -1,0 +1,23 @@
+{
+  "id": "replay_provider_error",
+  "model": "replay-reviewed-fixture",
+  "status": "failed",
+  "output": [
+    {
+      "type": "message",
+      "role": "assistant",
+      "content": []
+    }
+  ],
+  "usage": {
+    "input_tokens": 120,
+    "output_tokens": 95,
+    "output_tokens_details": {
+      "reasoning_tokens": 0
+    }
+  },
+  "error": {
+    "code": "server_error",
+    "message": "Synthetic provider failure"
+  }
+}

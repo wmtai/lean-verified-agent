@@ -30,8 +30,8 @@ FIXTURES = (
 )
 SNAPSHOT_FILES = (
     Path("configs/environment.json"), Path(".python-version"), Path("pyproject.toml"),
-    Path("uv.lock"), Path("lean/lean-toolchain"), Path("lean/lakefile.toml"),
-    Path("lean/lake-manifest.json"),
+    Path("uv.lock"), Path("lean-toolchain"), Path("lakefile.toml"),
+    Path("lake-manifest.json"),
     SPECIFICATION, Path("tasks/development/checked_subtraction/task.json"),
 )
 
@@ -139,11 +139,11 @@ def check_environment(root: Path = DEFAULT_ROOT, lake: str | None = None) -> dic
                 raise EnvironmentCheckError(f"Missing reproducibility input: {relative}")
             report["snapshot_sha256"][str(relative)] = hashlib.sha256(path.read_bytes()).hexdigest()
         python_pin = (root / ".python-version").read_text(encoding="utf-8").strip()
-        lean_pin = (root / "lean/lean-toolchain").read_text(encoding="utf-8").strip()
+        lean_pin = (root / "lean-toolchain").read_text(encoding="utf-8").strip()
         if python_pin != config["python_version"]:
             raise EnvironmentCheckError(".python-version differs from configs/environment.json")
         if lean_pin != "leanprover/lean4:v" + config["lean_version"]:
-            raise EnvironmentCheckError("lean/lean-toolchain differs from configs/environment.json")
+            raise EnvironmentCheckError("lean-toolchain differs from configs/environment.json")
         if report["versions"]["python"] != config["python_version"]:
             raise EnvironmentCheckError(
                 f"Python {config['python_version']} is required; "
@@ -162,7 +162,7 @@ def check_environment(root: Path = DEFAULT_ROOT, lake: str | None = None) -> dic
         # to `elan` would change argv[0] and invoke the wrong command.
         lake_binary = str(Path(lake_binary).absolute())
         report["lake_binary"] = lake_binary
-        cwd = root / "lean"
+        cwd = root
         timeout = config["fixture_timeout_seconds"]
         lake_version = _invoke([lake_binary, "--version"], cwd, timeout, report, "Lake version check")
         _require_success(lake_version)

@@ -4,5 +4,5 @@ defaultTargets = ["TaskSpecifications"]
 
 [[lean_lib]]
 name = "TaskSpecifications"
-srcDir = ".."
+srcDir = "."
 roots = ["tasks.development.checked_subtraction.Specification"]

@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "lean_version": "4.34.1",
+  "upstream_lean_version": "4.34.0",
+  "comparator_repository": "https://github.com/leanprover/comparator.git",
+  "comparator_revision": "d03acab154d269c06e60e4de7e4cc85deebff94b",
+  "comparator_main_sha256": "bb97e3e56d35431cfc7fbef9153935f85e82cde8cc0fc588ceb0119022646cec",
+  "exporter_revision": "076e8e57707e813375e8f9da8bf989799ace9680",
+  "policy": "checked-subtraction-v1",
+  "theorem_names": ["candidate_correct"],
+  "definition_names": ["candidate"],
+  "permitted_axioms": ["propext", "Quot.sound", "Classical.choice"],
+  "external_kernels": []
+}

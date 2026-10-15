@@ -1,0 +1,27 @@
+{
+  "id": "replay_incomplete",
+  "model": "replay-reviewed-fixture",
+  "status": "incomplete",
+  "output": [
+    {
+      "type": "message",
+      "role": "assistant",
+      "content": [
+        {
+          "type": "output_text",
+          "text": "{\"implementation_body\": \"if b"
+        }
+      ]
+    }
+  ],
+  "usage": {
+    "input_tokens": 120,
+    "output_tokens": 95,
+    "output_tokens_details": {
+      "reasoning_tokens": 0
+    }
+  },
+  "incomplete_details": {
+    "reason": "max_output_tokens"
+  }
+}

@@ -1,9 +1,12 @@
 # Exercise 1 — Build a reproducible project environment
 
-**This is the current exercise.** Establish a working Python–Lean project, inspect
-two contrasting implementations, and complete a manually written solution. Say
-**OK** when its completion checklist is satisfied; Exercise 2 will then extend
-this repository with structured tasks and candidate assembly.
+**This exercise passed review.** The current lesson is
+[Exercise 2](../02-tasks-and-submissions/README.md). This first exercise covers
+a working Python–Lean project, two contrasting implementations, and a manually
+written solution. Say
+**OK** when its completion checklist is satisfied to request a review. After
+feedback and a passing review, say **OK** again to advance. Exercise 2 will then
+extend this repository with structured tasks and candidate assembly.
 
 ## What you will learn
 
@@ -21,6 +24,19 @@ the trusted task specification as a library that the fixtures can import.
 The exercise uses reviewed fixtures. Restricted execution and final acceptance
 are introduced in Exercises 3 and 4, before relying on model-generated Lean.
 
+## Editor setup
+
+In VS Code, open the entire `lean-verified-agent` repository with **File →
+Open Folder**, then open `starter/Candidate.lean` below. The repository-root
+`lakefile.toml` and `lean-toolchain` allow the Lean extension to discover the
+same environment used by the command-line checks. Run `lake build` from the
+repository root to build the imported task module.
+
+If you see `unknown module prefix 'tasks'`, build the project and reload the
+editor window with **Developer: Reload Window**. A plain `lean` command outside
+Lake's environment can also miss the task imports; use `lake env lean` for
+manual file checks as shown below.
+
 ## 1. Set up the tools
 
 Install [`uv`](https://docs.astral.sh/uv/getting-started/installation/) if needed,
@@ -32,7 +48,7 @@ uv sync --locked --python 3.12.15
 ```
 
 For Lean, use [`elan`](https://github.com/leanprover/elan#installation) with the
-toolchain in `lean/lean-toolchain`, or a standalone Lean 4.34.1 installation.
+toolchain in `lean-toolchain`, or a standalone Lean 4.34.1 installation.
 Install your chosen Lean toolchain manager if needed. The checker records the compiler
 actually used rather than assume that an executable name implies the right
 version.
@@ -44,14 +60,15 @@ Run the reviewed environment check:
   --report runs/exercise01/environment.json
 ```
 
-A standalone Lake executable can be selected explicitly:
+If elan is installed but Lake is not on `PATH`, select its executable explicitly:
 
 ```bash
 .venv/bin/python -m scripts.check_environment \
-  --lake /path/to/lean-4.34.1-linux/bin/lake \
+  --lake "$HOME/.elan/bin/lake" \
   --report runs/exercise01/environment.json
 ```
 
+For a standalone installation, pass its actual Lake executable path to `--lake`.
 You can instead set `LAKE_BINARY` to that executable. Use the same installation
 for your manual commands. The commands below assume `lake` is on `PATH`; when
 using `LAKE_BINARY`, replace `lake` with `"$LAKE_BINARY"`.
@@ -98,17 +115,15 @@ a failed proof attempt alone does not establish an incorrect implementation.
 You can reproduce the checks directly. Start at the repository root:
 
 ```bash
-cd lean
 lake build
-lake env lean ../exercises/01-environment/fixtures/Correct.lean
-lake env lean ../exercises/01-environment/fixtures/WrongImplementation.lean
-lake env lean ../exercises/01-environment/fixtures/WrongProof.lean
+lake env lean exercises/01-environment/fixtures/Correct.lean
+lake env lean exercises/01-environment/fixtures/WrongImplementation.lean
+lake env lean exercises/01-environment/fixtures/WrongProof.lean
 ```
 
 The last command is expected to return a nonzero exit code and diagnostics about
-the unsuccessful proof. Read them before returning to the repository root with
-`cd ..`. The environment checker treats this expected failure as part of a
-successful exercise baseline.
+the unsuccessful proof. Read them. The environment checker treats this expected
+failure as part of a successful exercise baseline.
 
 ## 4. Work through the correct implementation and proof
 
@@ -154,10 +169,8 @@ the reviewed correct fixture when you need a complete file example.
 Check your file manually from the repository root:
 
 ```bash
-cd lean
 lake build
-lake env lean ../exercises/01-environment/starter/Candidate.lean
-cd ..
+lake env lean exercises/01-environment/starter/Candidate.lean
 ```
 
 Lean may exit successfully for a file containing `sorry`, accompanied by a
@@ -191,7 +204,9 @@ Complete the exercise when:
       report records the reviewed outcomes.
 - [ ] You can explain why a well-typed implementation can fail its fixed contract.
 
-Keep the report and your completed starter. Say **OK** to proceed to Exercise 2.
+Keep the report and your completed starter. Say **OK** for review. After a
+passing review and feedback, say **OK** again to proceed to Exercise 2. If fixes
+are needed, stay on this exercise and have the revised implementation reviewed.
 
 The [roadmap](../../docs/roadmap.md) describes the remaining exercises. Those ten
 implementation exercises are separate from the ten development and twenty

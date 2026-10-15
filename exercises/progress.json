@@ -1,8 +1,75 @@
 {
   "schema_version": 1,
-  "current_exercise": 1,
-  "state": "awaiting_learner_review",
+  "current_exercise": 6,
+  "state": "review_passed_awaiting_ok_to_advance",
   "advance_only_after_user_ok": true,
-  "completed_exercises": [],
-  "later_exercises_implemented": false
+  "completed_exercises": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6
+  ],
+  "later_exercises_implemented": false,
+  "ok_protocol": {
+    "first_ok": "review implementation and give feedback",
+    "ok_after_passing_feedback": "advance to the next exercise",
+    "required_fixes": "stay on the current exercise until a revised implementation passes review"
+  },
+  "last_review": {
+    "exercise": 6,
+    "result": "passed",
+    "report": "runs/exercise06/implementation-review.json"
+  },
+  "current_guide": "exercises/06-feedback-repair/README.md",
+  "implemented_curriculum": "Exercises 1–6 complete; awaiting learner OK before preparing Exercise 7",
+  "learning_focus": "Lean reasoning, fixed specifications, and agent generation/check/repair flow",
+  "provided_system_support": [
+    "bounded subprocess execution",
+    "restricted Docker worker lifecycle",
+    "resource limits and output capture",
+    "immutable attempt artifacts",
+    "Exercise 3 review command",
+    "pinned Comparator and lean4export",
+    "isolated candidate export",
+    "fresh trusted challenge comparison and kernel replay",
+    "permitted-axiom policy",
+    "execution smoke checks",
+    "allowlisted public task view",
+    "single-call replay and OpenAI Responses API transport",
+    "structured-response extraction and strict proposal parsing",
+    "one-shot generation/checking services and retained evidence",
+    "Exercise 5 prompt inspection, run CLI, and review command",
+    "frozen repair observations and deterministic model-response sequences",
+    "operation budget guards and observed token/time thresholds",
+    "proof-only implementation edit enforcement",
+    "validated failed-proof seeds with prior resource accounting",
+    "Exercise 6 replay/live entry point and no-API review command"
+  ],
+  "current_learner_work": {
+    "files": [
+      "agent/repair_prompts.py",
+      "agent/repair.py"
+    ],
+    "functions": [
+      "build_repair_prompt",
+      "choose_action",
+      "run_repair"
+    ],
+    "first_task": "Build the repair prompt using the previous proposal and actual diagnostics",
+    "focused_command": ".venv/bin/python -m scripts.exercise06_review --only prompt",
+    "review_command": ".venv/bin/python -m scripts.exercise06_review",
+    "review_is_required": true,
+    "real_model_run_required": true,
+    "implementation_status": "all three functions passed review; tests, replays and real repair/budget-stop evidence validated",
+    "implementation_check": "runs/exercise06/implementation-check.json"
+  },
+  "learner_preferences": {
+    "written_qa_required": false,
+    "reflection_required": false,
+    "oral_explanation_required": false,
+    "assessment": "implementations and check results",
+    "scope": "current and all remaining exercises"
+  }
 }

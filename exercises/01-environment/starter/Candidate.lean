@@ -11,8 +11,15 @@ not establish correctness. Complete both holes to finish your solution.
 
 def candidate (a b : Nat) : Option Nat :=
   -- IMPLEMENTATION HOLE: distinguish b ≤ a from a < b.
-  sorry
+  if b ≤ a then
+    some (a-b)
+  else
+    none
 
 theorem candidate_correct : TaskSpec.CheckedSubSpec candidate := by
   -- PROOF HOLE: prove both parts of the imported contract.
-  sorry
+  simp [TaskSpec.CheckedSubSpec]
+  constructor
+  <;> intro a b h
+  <;>  simp [candidate]
+  <;>  omega

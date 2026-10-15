@@ -12,25 +12,48 @@
   "required_declarations": {
     "implementation": {
       "name": "candidate",
-      "signature": "Nat → Nat → Option Nat"
+      "signature": "Nat → Nat → Option Nat",
+      "header": "def candidate (a b : Nat) : Option Nat :="
     },
     "correctness": {
       "name": "candidate_correct",
-      "type": "TaskSpec.CheckedSubSpec candidate"
+      "type": "TaskSpec.CheckedSubSpec candidate",
+      "header": "theorem candidate_correct : TaskSpec.CheckedSubSpec candidate :="
     }
   },
   "permitted_imports": [
     "tasks.development.checked_subtraction.Specification"
   ],
-  "editable_regions": ["implementation_body", "proof_body"],
+  "editable_regions": [
+    "implementation_body",
+    "proof_body"
+  ],
   "public_examples": [
-    {"arguments": [3, 5], "expected": "none"},
-    {"arguments": [8, 3], "expected": "some 5"},
-    {"arguments": [5, 5], "expected": "some 0"}
+    {
+      "arguments": [
+        3,
+        5
+      ],
+      "expected": "none"
+    },
+    {
+      "arguments": [
+        8,
+        3
+      ],
+      "expected": "some 5"
+    },
+    {
+      "arguments": [
+        5,
+        5
+      ],
+      "expected": "some 0"
+    }
   ],
   "environment": {
     "lean_toolchain": "leanprover/lean4:v4.34.1",
-    "lake_project": "lean",
+    "lake_project": ".",
     "dependencies": []
   },
   "role": "development teaching task; public fixtures illustrate the environment"
